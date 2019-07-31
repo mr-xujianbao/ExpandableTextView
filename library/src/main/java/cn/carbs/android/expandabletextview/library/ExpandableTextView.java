@@ -260,37 +260,43 @@ public class ExpandableTextView extends TextView{
                     indexEndTrimmed = indexEnd;
                 }
 
-                int remainWidth = getValidLayout().getWidth() -
-                        (int) (mTextPaint.measureText(mOrigText.subSequence(indexStart, indexEndTrimmed).toString()) + 0.5);
-                float widthTailReplaced = mTextPaint.measureText(getContentOfString(mEllipsisHint)
-                        + (mShowToExpandHint ? (getContentOfString(mToExpandHint) + getContentOfString(mGapToExpandHint)) : ""));
+                int indexEndTrimmedRevised = 0;
+                String maxLineTxt = mOrigText.subSequence(indexStart, indexEndTrimmed).toString();
+                if(maxLineTxt.endsWith("\n")){
+                    indexEndTrimmedRevised = indexEnd;
+                }else {
+                    int remainWidth = getValidLayout().getWidth() -
+                            (int) (mTextPaint.measureText(mOrigText.subSequence(indexStart, indexEndTrimmed).toString()) + 0.5);
+                    float widthTailReplaced = mTextPaint.measureText(getContentOfString(mEllipsisHint)
+                            + (mShowToExpandHint ? (getContentOfString(mToExpandHint) + getContentOfString(mGapToExpandHint)) : ""));
 
-                int indexEndTrimmedRevised = indexEndTrimmed;
-                if (remainWidth > widthTailReplaced) {
-                    int extraOffset = 0;
-                    int extraWidth = 0;
-                    while (remainWidth > widthTailReplaced + extraWidth) {
-                        extraOffset++;
-                        if (indexEndTrimmed + extraOffset <= mOrigText.length()) {
-                            extraWidth = (int) (mTextPaint.measureText(
-                                    mOrigText.subSequence(indexEndTrimmed, indexEndTrimmed + extraOffset).toString()) + 0.5);
-                        } else {
-                            break;
+                    indexEndTrimmedRevised = indexEndTrimmed;
+                    if (remainWidth > widthTailReplaced) {
+                        int extraOffset = 0;
+                        int extraWidth = 0;
+                        while (remainWidth > widthTailReplaced + extraWidth) {
+                            extraOffset++;
+                            if (indexEndTrimmed + extraOffset <= mOrigText.length()) {
+                                extraWidth = (int) (mTextPaint.measureText(
+                                        mOrigText.subSequence(indexEndTrimmed, indexEndTrimmed + extraOffset).toString()) + 0.5);
+                            } else {
+                                break;
+                            }
                         }
-                    }
-                    indexEndTrimmedRevised += extraOffset - 1;
-                } else {
-                    int extraOffset = 0;
-                    int extraWidth = 0;
-                    while (remainWidth + extraWidth < widthTailReplaced) {
-                        extraOffset--;
-                        if (indexEndTrimmed + extraOffset > indexStart) {
-                            extraWidth = (int) (mTextPaint.measureText(mOrigText.subSequence(indexEndTrimmed + extraOffset, indexEndTrimmed).toString()) + 0.5);
-                        } else {
-                            break;
+                        indexEndTrimmedRevised += extraOffset - 1;
+                    } else {
+                        int extraOffset = 0;
+                        int extraWidth = 0;
+                        while (remainWidth + extraWidth < widthTailReplaced) {
+                            extraOffset--;
+                            if (indexEndTrimmed + extraOffset > indexStart) {
+                                extraWidth = (int) (mTextPaint.measureText(mOrigText.subSequence(indexEndTrimmed + extraOffset, indexEndTrimmed).toString()) + 0.5);
+                            } else {
+                                break;
+                            }
                         }
+                        indexEndTrimmedRevised += extraOffset;
                     }
-                    indexEndTrimmedRevised += extraOffset;
                 }
 
                 String fixText = removeEndLineBreak(mOrigText.subSequence(0, indexEndTrimmedRevised));
